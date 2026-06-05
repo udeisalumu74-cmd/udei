@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tanzania App</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --accent: #00d4aa;
+    --accent2: #ff6b35;
+    --gold: #fbbf24;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --border: rgba(255,255,255,0.08);
+    --radius: 16px;
+    --font-head: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+  [data-theme="light"] {
+    --bg: #f0f4ff;
+    --surface: #ffffff;
+    --surface2: #e8eeff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: rgba(0,0,0,0.08);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  /* ── BACKGROUND MESH ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(0,212,170,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 80%, rgba(255,107,53,0.10) 0%, transparent 60%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; min-height: 100vh; position: relative; z-index: 1; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ══════════════════════════════
+     SPLASH
+  ══════════════════════════════ */
+  #splash {
+    justify-content: center; align-items: center;
+    background: radial-gradient(circle at 50% 40%, #0d2b22 0%, #0a0e1a 70%);
+  }
+  .splash-inner { text-align: center; animation: fadeUp 0.8s ease; }
+  .splash-logo {
+    width: 90px; height: 90px; border-radius: 24px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.5rem; margin: 0 auto 24px;
+    box-shadow: 0 0 60px rgba(0,212,170,0.4);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 40px rgba(0,212,170,0.4)} 50%{box-shadow:0 0 80px rgba(0,212,170,0.7)} }
+  .splash-inner h1 { font-family: var(--font-head); font-size: 2.8rem; font-weight: 800; letter-spacing: -1px; }
+  .splash-inner h1 span { color: var(--accent); }
+  .splash-inner p { color: var(--muted); margin: 8px 0 36px; font-size: 1rem; }
+  .btn-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 14px 28px; border-radius: 50px; border: none; cursor: pointer;
+    font-family: var(--font-body); font-size: 0.95rem; font-weight: 500;
+    transition: all 0.2s; }
+  .btn-primary { background: var(--accent); color: #0a0e1a; }
+  .btn-primary:hover { background: #00f0c0; transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,212,170,0.4); }
+  .btn-outline { background: transparent; color: var(--text); border: 1.5px solid var(--border); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+  .btn-danger { background: #ef4444; color: #fff; }
+  .btn-gold { background: var(--gold); color: #1a1a00; }
+
+  /* ══════════════════════════════
+     AUTH SCREENS
+  ══════════════════════════════ */
+  .auth-wrap {
+    flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px;
+  }
+  .auth-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 24px;
+    padding: 40px 36px; width: 100%; max-width: 420px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+    animation: fadeUp 0.5s ease;
+  }
+  .auth-card h2 { font-family: var(--font-head); font-size: 1.8rem; font-weight: 800; margin-bottom: 6px; }
+  .auth-card h2 span { color: var(--accent); }
+  .auth-card p { color: var(--muted); font-size: 0.9rem; margin-bottom: 28px; }
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-size: 0.82rem; color: var(--muted); margin-bottom: 6px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; }
+  .field input {
+    width: 100%; padding: 13px 16px; border-radius: 12px;
+    background: var(--surface2); border: 1.5px solid var(--border);
+    color: var(--text); font-family: var(--font-body); font-size: 0.95rem;
+    outline: none; transition: border 0.2s;
+  }
+  .field input:focus { border-color: var(--accent); }
+  .field-hint { font-size: 0.78rem; color: var(--muted); margin-top: 5px; }
+  .auth-link { text-align: center; margin-top: 20px; font-size: 0.88rem; color: var(--muted); }
+  .auth-link span { color: var(--accent); cursor: pointer; font-weight: 500; }
+  .auth-link span:hover { text-decoration: underline; }
+  .error-msg { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3);
+    color: #f87171; padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 16px; display: none; }
+  .success-msg { background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.3);
+    color: var(--accent); padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 16px; display: none; }
+
+  /* ══════════════════════════════
+     MAIN APP
+  ══════════════════════════════ */
+  .app-header {
+    background: rgba(17,24,39,0.85); backdrop-filter: blur(20px);
+    padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
+  }
+  .header-logo { display: flex; align-items: center; gap: 10px; }
+  .header-logo .ico { width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+  .header-logo span { font-family: var(--font-head); font-weight: 700; font-size: 1.1rem; }
+  .header-logo span b { color: var(--accent); }
+  .header-right { display: flex; gap: 8px; align-items: center; }
+  .icon-btn { width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--surface2); cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; transition: all 0.2s; color: var(--text); }
+  .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .user-chip { display: flex; align-items: center; gap: 8px; padding: 6px 12px;
+    background: var(--surface2); border-radius: 50px; border: 1px solid var(--border); font-size: 0.85rem; }
+  .user-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(17,24,39,0.95); backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-around; padding: 10px 0 16px;
+  }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px;
+    cursor: pointer; padding: 6px 14px; border-radius: 12px; transition: all 0.2s;
+    font-size: 0.7rem; color: var(--muted); }
+  .nav-item .ni { font-size: 1.4rem; }
+  .nav-item.active, .nav-item:hover { color: var(--accent); }
+  .nav-item.active { background: rgba(0,212,170,0.08); }
+
+  /* MAIN CONTENT */
+  .main-content { flex: 1; padding: 20px 16px 100px; max-width: 700px; margin: 0 auto; width: 100%; }
+
+  /* TABS */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; animation: fadeUp 0.4s ease; }
+
+  /* ── DASHBOARD ── */
+  .greeting-banner {
+    background: linear-gradient(135deg, #0d2b22 0%, #0a1628 100%);
+    border: 1px solid rgba(0,212,170,0.2); border-radius: var(--radius);
+    padding: 24px; margin-bottom: 20px; position: relative; overflow: hidden;
+  }
+  .greeting-banner::after {
+    content: '🇹🇿'; position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+    font-size: 3.5rem; opacity: 0.3;
+  }
+  .greeting-banner h3 { font-family: var(--font-head); font-size: 1.5rem; font-weight: 700; }
+  .greeting-banner p { color: var(--muted); font-size: 0.88rem; margin-top: 4px; }
+
+  /* AI DAILY MSG */
+  .ai-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px; margin-bottom: 16px; position: relative;
+  }
+  .ai-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .ai-avatar { width: 40px; height: 40px; border-radius: 12px;
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+    display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+  .ai-card-head div span { font-size: 0.75rem; color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+  .ai-card-head div p { font-weight: 600; font-size: 0.95rem; }
+  .ai-msg-text { font-size: 0.92rem; line-height: 1.65; color: var(--text); }
+  .ai-ask-bar { display: flex; gap: 10px; margin-top: 14px; }
+  .ai-ask-bar input { flex: 1; padding: 10px 14px; border-radius: 10px;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-family: var(--font-body); font-size: 0.88rem; outline: none; }
+  .ai-ask-bar input:focus { border-color: var(--accent); }
+  .ai-ask-bar button { padding: 10px 18px; border-radius: 10px; border: none;
+    background: var(--accent); color: #0a0e1a; cursor: pointer; font-weight: 600; font-size: 0.88rem; }
+  .ai-response { margin-top: 12px; padding: 12px; background: var(--surface2);
+    border-radius: 10px; font-size: 0.9rem; line-height: 1.6; display: none; }
+
+  /* CARDS GRID */
+  .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 18px; text-align: center; }
+  .stat-card .ico { font-size: 2rem; margin-bottom: 8px; }
+  .stat-card .val { font-family: var(--font-head); font-size: 1.4rem; font-weight: 700; color: var(--accent); }
+  .stat-card .lbl { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+  /* ── HISTORIA ── */
+  .section-title { font-family: var(--font-head); font-size: 1.2rem; font-weight: 700; margin-bottom: 14px; }
+  .section-title span { color: var(--accent); }
+  .news-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 18px; margin-bottom: 14px; transition: border-color 0.2s; }
+  .news-card:hover { border-color: rgba(0,212,170,0.4); }
+  .news-tag { display: inline-block; padding: 3px 10px; border-radius: 50px; font-size: 0.72rem;
+    font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .tag-historia { background: rgba(251,191,36,0.15); color: var(--gold); }
+  .tag-teknolojia { background: rgba(0,212,170,0.15); color: var(--accent); }
+  .tag-afya { background: rgba(34,197,94,0.15); color: #4ade80; }
+  .tag-dunia { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+  .news-card h4 { font-family: var(--font-head); font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+  .news-card p { font-size: 0.87rem; color: var(--muted); line-height: 1.55; }
+  .news-card .news-date { font-size: 0.75rem; color: var(--muted); margin-top: 8px; }
+
+  /* ── HALI YA HEWA ── */
+  .weather-card {
+    background: linear-gradient(135deg, #0c2340, #0d2b22);
+    border: 1px solid rgba(0,212,170,0.2); border-radius: var(--radius);
+    padding: 24px; margin-bottom: 16px; text-align: center;
+  }
+  .weather-icon { font-size: 4rem; margin-bottom: 8px; }
+  .weather-temp { font-family: var(--font-head); font-size: 3rem; font-weight: 800; color: var(--gold); }
+  .weather-desc { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+  .weather-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+  .w-item { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; text-align: center; }
+  .w-item .wi { font-size: 1.4rem; margin-bottom: 4px; }
+  .w-item .wv { font-weight: 600; font-size: 0.9rem; }
+  .w-item .wl { font-size: 0.72rem; color: var(--muted); }
+  .weather-cities { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .city-w { background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px; display: flex; justify-content: space-between; align-items: center; }
+  .city-w span { font-weight: 600; font-size: 0.9rem; }
+  .city-w em { font-style: normal; color: var(--accent); font-family: var(--font-head); font-weight: 700; }
+
+  /* ── GPS NYUMBA ── */
+  .gps-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 14px; }
+  .gps-card h4 { font-family: var(--font-head); font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .gps-entry { background: var(--surface2); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+  .gps-entry .gps-name { font-weight: 600; font-size: 0.95rem; }
+  .gps-entry .gps-coords { font-size: 0.78rem; color: var(--accent); font-family: monospace; margin-top: 2px; }
+  .gps-entry .gps-desc { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+  .badge-admin { display: inline-block; background: rgba(251,191,36,0.15); color: var(--gold);
+    border: 1px solid rgba(251,191,36,0.3); padding: 2px 8px; border-radius: 50px; font-size: 0.72rem; font-weight: 600; }
+
+  /* ── MIPANGILIO ── */
+  .settings-group { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden; margin-bottom: 16px; }
+  .settings-group-title { padding: 14px 18px; border-bottom: 1px solid var(--border);
+    font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+  .setting-row { display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 18px; border-bottom: 1px solid var(--border); }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-info { display: flex; align-items: center; gap: 12px; }
+  .setting-ico { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center;
+    justify-content: center; font-size: 1.1rem; }
+  .setting-info div span { font-size: 0.85rem; font-weight: 500; }
+  .setting-info div p { font-size: 0.75rem; color: var(--muted); margin-top: 1px; }
+  /* Toggle */
+  .toggle { width: 44px; height: 24px; background: var(--surface2); border-radius: 50px;
+    position: relative; cursor: pointer; transition: background 0.3s; border: 1px solid var(--border); }
+  .toggle.on { background: var(--accent); border-color: var(--accent); }
+  .toggle::after { content: ''; position: absolute; width: 18px; height: 18px;
+    background: white; border-radius: 50%; top: 2px; left: 3px; transition: left 0.3s; }
+  .toggle.on::after { left: 22px; }
+  /* Select */
+  .setting-select { background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    padding: 7px 10px; border-radius: 8px; font-family: var(--font-body); font-size: 0.85rem; outline: none; cursor: pointer; }
+
+  /* PROFILE */
+  .profile-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 24px; text-align: center; margin-bottom: 16px; }
+  .profile-avatar { width: 80px; height: 80px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; margin: 0 auto 14px; border: 3px solid rgba(0,212,170,0.4); }
+  .profile-name { font-family: var(--font-head); font-size: 1.4rem; font-weight: 700; }
+  .profile-email { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+
+  /* ADMIN PANEL */
+  .admin-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .admin-table th { padding: 10px 12px; text-align: left; background: var(--surface2);
+    color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .admin-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .admin-table tr:last-child td { border-bottom: none; }
+  .admin-table .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: inline-block; margin-right: 6px; }
+
+  /* ── OVERLAY MODAL ── */
+  .overlay { display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);
+    align-items: center; justify-content: center; padding: 20px; }
+  .overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+    padding: 28px; width: 100%; max-width: 380px; animation: fadeUp 0.3s ease; }
+  .modal h3 { font-family: var(--font-head); font-size: 1.3rem; font-weight: 700; margin-bottom: 20px; }
+  .modal-close { float: right; background: none; border: none; color: var(--muted);
+    font-size: 1.2rem; cursor: pointer; margin-top: -4px; }
+
+  /* ── TOAST ── */
+  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: #1e293b; border: 1px solid var(--border); color: var(--text);
+    padding: 12px 20px; border-radius: 50px; font-size: 0.88rem; font-weight: 500;
+    z-index: 300; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* LOADING SPINNER */
+  .loading-dots { display: inline-flex; gap: 4px; align-items: center; }
+  .loading-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+    animation: dot-bounce 1.2s infinite ease-in-out; }
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dot-bounce { 0%,80%,100%{transform:scale(0)} 40%{transform:scale(1)} }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 50px;
+    font-size: 0.78rem; font-weight: 500; }
+  .chip.accent { border-color: rgba(0,212,170,0.4); color: var(--accent); background: rgba(0,212,170,0.08); }
+
+  select option { background: #1e293b; color: #e2e8f0; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     SPLASH
+══════════════════════════════════════════ -->
+<div id="splash" class="screen active">
+  <div class="splash-inner">
+    <div class="splash-logo">🇹🇿</div>
+    <h1>Tanzania <span>App</span></h1>
+    <p>Habari • Teknolojia • Maisha ya Kisasa</p>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="showScreen('register')">Jiandikishe</button>
+      <button class="btn btn-outline" onclick="showScreen('login')">Ingia</button>
+      <button class="btn btn-gold" onclick="showScreen('admin-login')">👑 Admin</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     REGISTER
+══════════════════════════════════════════ -->
+<div id="register" class="screen">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h2>Jiandikishe <span>Sasa</span></h2>
+      <p>Tengeneza akaunti yako ya Tanzania App</p>
+      <div id="reg-error" class="error-msg"></div>
+      <div id="reg-success" class="success-msg"></div>
+      <div class="field">
+        <label>Jina la Mtumiaji</label>
+        <input id="reg-username" type="text" placeholder="mfano: juma_tz">
+      </div>
+      <div class="field">
+        <label>Barua Pepe</label>
+        <input id="reg-email" type="email" placeholder="barua@mfano.com">
+      </div>
+      <div class="field">
+        <label>Nenosiri</label>
+        <input id="reg-pass" type="password" placeholder="Herufi + namba, urefu wa 8">
+        <div class="field-hint">🔐 Lazima liwe na herufi na namba (mfano: Juma2025)</div>
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="doRegister()">Jiandikishe</button>
+      <div class="auth-link">
+        Una akaunti tayari? <span onclick="showScreen('login')">Ingia hapa</span>
+      </div>
+      <div class="auth-link" style="margin-top:8px">
+        <span onclick="showScreen('splash')" style="color:var(--muted)">← Rudi Nyumbani</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     LOGIN
+══════════════════════════════════════════ -->
+<div id="login" class="screen">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h2>Karibu <span>Tena</span></h2>
+      <p>Ingia kwenye akaunti yako</p>
+      <div id="login-error" class="error-msg"></div>
+      <div class="field">
+        <label>Jina la Mtumiaji</label>
+        <input id="login-user" type="text" placeholder="Jina lako la mtumiaji">
+      </div>
+      <div class="field">
+        <label>Nenosiri</label>
+        <input id="login-pass" type="password" placeholder="Nenosiri lako">
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Ingia</button>
+      <div class="auth-link">
+        Huna akaunti? <span onclick="showScreen('register')">Jiandikishe</span>
+      </div>
+      <div class="auth-link" style="margin-top:8px">
+        <span onclick="showScreen('splash')" style="color:var(--muted)">← Rudi Nyumbani</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     ADMIN LOGIN
+══════════════════════════════════════════ -->
+<div id="admin-login" class="screen">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h2>👑 Akaunti ya <span>Admin</span></h2>
+      <p>Sehemu hii ni kwa waongozaji wa mfumo tu</p>
+      <div id="admin-error" class="error-msg"></div>
+      <div class="field">
+        <label>Jina la Admin</label>
+        <input id="admin-user" type="text" placeholder="Tanzania">
+      </div>
+      <div class="field">
+        <label>Nenosiri la Admin</label>
+        <input id="admin-pass" type="password" placeholder="••••">
+      </div>
+      <button class="btn btn-gold" style="width:100%" onclick="doAdminLogin()">Ingia kama Admin</button>
+      <div class="auth-link" style="margin-top:16px">
+        <span onclick="showScreen('splash')" style="color:var(--muted)">← Rudi Nyumbani</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════════ -->
+<div id="main-app" class="screen">
+  <header class="app-header">
+    <div class="header-logo">
+      <div class="ico">🇹🇿</div>
+      <span><b>Tanzania</b> App</span>
+    </div>
+    <div class="header-right">
+      <button class="icon-btn" onclick="toggleTheme()" title="Badilisha Muonekano">🌙</button>
+      <button class="icon-btn" onclick="toggleVoice()" id="voice-btn" title="Sauti">🔊</button>
+      <div class="user-chip">
+        <div class="dot"></div>
+        <span id="header-username">Mtumiaji</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-content">
+    <!-- DASHIBODI -->
+    <div id="tab-home" class="tab-content active">
+      <div class="greeting-banner">
+        <h3 id="greet-name">Habari, 👋</h3>
+        <p id="greet-date">Leo ni siku nzuri ya kujifunza!</p>
+      </div>
+
+      <div class="cards-grid">
+        <div class="stat-card"><div class="ico">📰</div><div class="val" id="news-count">12</div><div class="lbl">Habari za Leo</div></div>
+        <div class="stat-card"><div class="ico">⛅</div><div class="val" id="temp-now">27°C</div><div class="lbl">Joto la Sasa</div></div>
+        <div class="stat-card"><div class="ico">🤖</div><div class="val">AI</div><div class="lbl">Msaidizi Wako</div></div>
+        <div class="stat-card"><div class="ico">🏠</div><div class="val" id="gps-count">0</div><div class="lbl">Nyumba Zilizoorodheshwa</div></div>
+      </div>
+
+      <!-- AI MSAIDIZI -->
+      <div class="ai-card">
+        <div class="ai-card-head">
+          <div class="ai-avatar">🤖</div>
+          <div>
+            <span>AI Msaidizi</span>
+            <p>Ujumbe wa Leo</p>
+          </div>
+        </div>
+        <div class="ai-msg-text" id="daily-ai-msg">
+          Leo, teknolojia ya akili bandia (AI) inabadilisha jinsi tunavyoishi na kufanya kazi. Kutoka kwa kilimo hadi afya, AI inaweza kukusaidia kupanga muda wako, kupata habari muhimu, na kufanya maamuzi bora. Tanzania inaendelea kupiga hatua kubwa katika sekta ya teknolojia!
+        </div>
+        <div class="ai-ask-bar">
+          <input id="ai-input" type="text" placeholder="Uliza swali lolote kwa AI...">
+          <button onclick="askAI()">Tuma</button>
+        </div>
+        <div class="ai-response" id="ai-response"></div>
+      </div>
+    </div>
+
+    <!-- HISTORIA & HABARI -->
+    <div id="tab-news" class="tab-content">
+      <p class="section-title">Historia ya <span>Dunia</span> & Habari</p>
+
+      <div class="news-card">
+        <span class="news-tag tag-historia">Historia</span>
+        <h4>Uhuru wa Tanzania — Desemba 9, 1961</h4>
+        <p>Tanganyika ilipata uhuru wake kutoka kwa Uingereza mnamo Desemba 9, 1961. Mwalimu Julius Kambarage Nyerere alikuwa kiongozi mkuu, na alikuwa Waziri Mkuu wa kwanza. Mnamo 1964, Tanganyika iliungana na Zanzibar na kuunda Jamhuri ya Muungano wa Tanzania.</p>
+        <div class="news-date">📅 Desemba 9, 1961</div>
+      </div>
+
+      <div class="news-card">
+        <span class="news-tag tag-teknolojia">Teknolojia</span>
+        <h4>AI Inabadilisha Kilimo Afrika</h4>
+        <p>Mifumo ya akili bandia sasa inatumika katika mashamba ya Afrika Mashariki kusaidia wakulima kujua hali ya hewa, magonjwa ya mazao, na bei za soko. Tanzania inaongoza katika matumizi ya teknolojia hii mpya.</p>
+        <div class="news-date">📅 Mei 2026</div>
+      </div>
+
+      <div class="news-card">
+        <span class="news-tag tag-dunia">Dunia</span>
+        <h4>G20 Inajadili Athari za AI kwa Uchumi</h4>
+        <p>Viongozi wa nchi 20 kubwa duniani walikutana kujadili jinsi akili bandia inavyobadilisha uchumi wa dunia. Mada kuu ilikuwa ajira, elimu, na usalama wa data kwa raia.</p>
+        <div class="news-date">📅 Mei 28, 2026</div>
+      </div>
+
+      <div class="news-card">
+        <span class="news-tag tag-afya">Afya</span>
+        <h4>Dawa Mpya ya Malaria Inafua Masafa</h4>
+        <p>Watafiti wa Tanzania na Kenya wamegundua chanzo kipya cha dawa ya malaria kinachotokana na mimea ya asili ya Afrika. Matokeo ya awali yanaonyesha ufanisi wa asilimia 94 dhidi ya vimelea vya malaria.</p>
+        <div class="news-date">📅 Mei 2026</div>
+      </div>
+
+      <div class="news-card">
+        <span class="news-tag tag-historia">Historia ya Dunia</span>
+        <h4>Vita vya Kwanza vya Dunia — 1914-1918</h4>
+        <p>Vita vya Kwanza vya Dunia vilichipuka baada ya mauaji ya Duke Franz Ferdinand wa Austria-Hungary. Vita hii ilihusisha mataifa mengi na ilisababisha vifo vya zaidi ya watu milioni 17. Tanzania (Tanganyika) ilikuwa koloni la Ujerumani wakati huo.</p>
+        <div class="news-date">📅 1914–1918</div>
+      </div>
+
+      <div class="news-card">
+        <span class="news-tag tag-teknolojia">Teknolojia</span>
+        <h4>Tanzania Inazindua Mtandao wa 5G Dar es Salaam</h4>
+        <p>Kampuni za simu nchini Tanzania zimezindua rasmi mtandao wa kizazi cha tano (5G) katika mji wa Dar es Salaam. Hatua hii itaimarisha uchumi wa kidijitali na kuwezesha huduma za kisasa zaidi.</p>
+        <div class="news-date">📅 Aprili 2026</div>
+      </div>
+    </div>
+
+    <!-- HALI YA HEWA -->
+    <div id="tab-weather" class="tab-content">
+      <p class="section-title">Hali ya <span>Hewa</span></p>
+
+      <div class="weather-card">
+        <div class="weather-icon" id="w-icon">⛅</div>
+        <div class="weather-temp" id="w-temp">27°C</div>
+        <div id="w-city" style="font-size:1.1rem;font-weight:600;margin:4px 0">Dar es Salaam</div>
+        <div class="weather-desc" id="w-desc">Mawingu Machache — Upepo Mdogo</div>
+        <div class="weather-grid">
+          <div class="w-item"><div class="wi">💧</div><div class="wv" id="w-hum">72%</div><div class="wl">Unyevu</div></div>
+          <div class="w-item"><div class="wi">💨</div><div class="wv" id="w-wind">14 km/h</div><div class="wl">Upepo</div></div>
+          <div class="w-item"><div class="wi">👁️</div><div class="wv">10 km</div><div class="wl">Uoni</div></div>
+        </div>
+      </div>
+
+      <p class="section-title">Miji ya <span>Tanzania</span></p>
+      <div class="weather-cities">
+        <div class="city-w"><span>🌆 Dodoma</span><em>24°C</em></div>
+        <div class="city-w"><span>⛰️ Arusha</span><em>19°C</em></div>
+        <div class="city-w"><span>🌊 Mombasa</span><em>30°C</em></div>
+        <div class="city-w"><span>🏔️ Kilimanjaro</span><em>12°C</em></div>
+        <div class="city-w"><span>🏝️ Zanzibar</span><em>29°C</em></div>
+        <div class="city-w"><span>🌿 Mwanza</span><em>25°C</em></div>
+      </div>
+
+      <div style="margin-top:18px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px;">
+        <p style="font-weight:600; margin-bottom:12px;">📍 GPS — Hali ya Hewa Mahali Pako</p>
+        <button class="btn btn-primary" onclick="getLocation()">Pata Hewa ya Mahali Pako</button>
+        <div id="geo-result" style="margin-top:12px; font-size:0.88rem; color:var(--muted);"></div>
+      </div>
+    </div>
+
+    <!-- GPS NYUMBA -->
+    <div id="tab-gps" class="tab-content">
+      <p class="section-title">🏠 Nyumba za <span>Kupangisha</span></p>
+      <div class="gps-card">
+        <h4>➕ Ongeza Nyumba Yako</h4>
+        <div class="field">
+          <label>Jina/Maelezo ya Nyumba</label>
+          <input id="gps-name" type="text" placeholder="mfano: Nyumba ya Sinza, Chumba 3">
+        </div>
+        <div class="field">
+          <label>Bei ya Kodi (TZS/mwezi)</label>
+          <input id="gps-price" type="number" placeholder="200000">
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:14px;">
+          <button class="btn btn-primary" style="flex:1" onclick="getGPS()">📍 Pata GPS Yangu</button>
+          <button class="btn btn-outline" style="flex:1" onclick="saveGPS()">💾 Hifadhi</button>
+        </div>
+        <div id="gps-status" style="font-size:0.85rem; color:var(--muted);"></div>
+      </div>
+
+      <p class="section-title">Nyumba Zilizoorodheshwa</p>
+      <div id="gps-list">
+        <p style="color:var(--muted); font-size:0.9rem; text-align:center; padding:20px;">Bado hakuna nyumba zilizoorodheshwa. Ongeza nyumba yako ya kwanza!</p>
+      </div>
+    </div>
+
+    <!-- MIPANGILIO -->
+    <div id="tab-settings" class="tab-content">
+      <p class="section-title">⚙️ <span>Mipangilio</span></p>
+
+      <div class="settings-group">
+        <div class="settings-group-title">🌐 Lugha</div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-ico" style="background:rgba(0,212,170,0.12)">🌍</div>
+            <div><span>Lugha ya Programu</span><p>Chagua lugha unayopendelea</p></div>
+          </div>
+          <select class="setting-select" id="lang-select" onchange="changeLang(this.value)">
+            <option value="sw">🇹🇿 Kiswahili</option>
+            <option value="en">🇬🇧 English</option>
+            <option value="ar">🇸🇦 العربية</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">🎨 Muonekano</div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-ico" style="background:rgba(251,191,36,0.12)">🌙</div>
+            <div><span>Usiku / Mchana</span><p>Badilisha rangi ya programu</p></div>
+          </div>
+          <div class="toggle" id="theme-toggle" onclick="toggleTheme()"></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-ico" style="background:rgba(99,102,241,0.12)">✨</div>
+            <div><span>Athari za Uhuishaji</span><p>Mwendo wa vipengele</p></div>
+          </div>
+          <div class="toggle on" id="anim-toggle" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-ico" style="background:rgba(0,212,170,0.12)">🎨</div>
+            <div><span>Mandhari (Theme)</span><p>Badilisha rangi kuu</p></div>
+          </div>
+          <select class="setting-select" onchange="changeAccent(this.value)">
+            <option value="#00d4aa">🟢 Kijani (Default)</option>
+            <option value="#3b82f6">🔵 Bluu</option>
+            <option value="#f59e0b">🟡 Dhahabu</option>
+            <option value="#ef4444">🔴 Nyekundu</option>
+            <option value="#8b5cf6">🟣 Zambarau</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">🔊 Sauti</div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-ico" style="background:rgba(34,197,94,0.12)">🔊</div>
+            <div><span>Sauti ya Programu</span><p>Arifa na sauti za kubonyeza</p></div>
+          </div>
+          <div class="toggle on" id="sound-toggle" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-ico" style="background:rgba(0,212,170,0.12)">🗣️</div>
+            <div><span>Kusomwa kwa Sauti</span><p>Programu isomee ujumbe kwa sauti</p></div>
+          </div>
+          <div class="toggle" id="tts-toggle" onclick="toggleTTS()"></div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">🤖 AI Msaidizi</div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-ico" style="background:rgba(124,58,237,0.12)">🤖</div>
+            <div><span>AI Msaidizi Hewani</span><p>Wezesha msaada wa akili bandia</p></div>
+          </div>
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-ico" style="background:rgba(249,115,22,0.12)">📊</div>
+            <div><span>Mapendekezo ya AI</span><p>AI ikupendekeze maudhui</p></div>
+          </div>
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">👤 Akaunti</div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-ico" style="background:rgba(239,68,68,0.12)">🚪</div>
+            <div><span>Toka kwenye Akaunti</span><p>Ondoka kwenye Tanzania App</p></div>
+          </div>
+          <button class="btn btn-danger" style="padding:8px 16px;font-size:0.82rem" onclick="logout()">Toka</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFAILI / ADMIN -->
+    <div id="tab-profile" class="tab-content">
+      <!-- user profile shown dynamically -->
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('home', this)"><div class="ni">🏠</div><span>Nyumbani</span></div>
+    <div class="nav-item" onclick="switchTab('news', this)"><div class="ni">📰</div><span>Habari</span></div>
+    <div class="nav-item" onclick="switchTab('weather', this)"><div class="ni">⛅</div><span>Hewa</span></div>
+    <div class="nav-item" onclick="switchTab('gps', this)"><div class="ni">🏠</div><span>Nyumba</span></div>
+    <div class="nav-item" onclick="switchTab('settings', this)"><div class="ni">⚙️</div><span>Mipangilio</span></div>
+    <div class="nav-item" onclick="switchTab('profile', this)"><div class="ni">👤</div><span>Mimi</span></div>
+  </nav>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- GPS MODAL -->
+<div class="overlay" id="gps-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('gps-modal').classList.remove('open')">✕</button>
+    <h3>📍 GPS Imepata!</h3>
+    <div id="gps-found-info"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let currentUser = null;
+let isAdmin = false;
+let voiceEnabled = true;
+let ttsEnabled = false;
+let darkMode = true;
+let currentGPS = null;
+let gpsHouses = JSON.parse(localStorage.getItem('tz_gps_houses') || '[]');
+let users = JSON.parse(localStorage.getItem('tz_users') || '[]');
+
+// AI responses (preset since no real API key)
+const aiResponses = {
+  default: [
+    "Asante kwa swali lako! Akili bandia inaweza kukusaidia kufanya kazi haraka zaidi, kupata habari, na kufanya maamuzi bora. Tanzania inaendelea kupiga hatua kubwa katika sekta ya teknolojia!",
+    "Swali zuri! AI inaweza kusaidia wafanyakazi, wanafunzi, na wafanyabiashara Tanzania kwa njia nyingi — kutoka kuandika hadi kupanga safari.",
+    "Tanzania ina vijana wenye vipaji vingi katika teknolojia. Kujifunza AI leo kutakusaidia kupata nafasi nzuri za kazi kesho!",
+    "Teknolojia ya AI inaendelea kubadilika kila siku. Fuata habari za hivi karibuni kupitia Tanzania App ili usikose chochote muhimu.",
+    "Vizuri! Moja ya faida za AI ni kuweza kusindika takwimu nyingi haraka sana — kitu ambacho binadamu peke yake angelala muda mrefu kufanya!"
+  ]
+};
+
+// ═══════════════════════════════════════
+// SCREEN NAVIGATION
+// ═══════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function switchTab(name, el) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+  if (name === 'profile') renderProfile();
+}
+
+// ═══════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════
+function validatePassword(p) {
+  return p.length >= 8 && /[a-zA-Z]/.test(p) && /[0-9]/.test(p);
+}
+
+function doRegister() {
+  const username = document.getElementById('reg-username').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass = document.getElementById('reg-pass').value;
+  const errEl = document.getElementById('reg-error');
+  const sucEl = document.getElementById('reg-success');
+  errEl.style.display = 'none';
+  sucEl.style.display = 'none';
+
+  if (!username || !email || !pass) {
+    errEl.textContent = '⚠️ Tafadhali jaza sehemu zote.'; errEl.style.display = 'block'; return;
+  }
+  if (!email.includes('@')) {
+    errEl.textContent = '⚠️ Barua pepe si sahihi.'; errEl.style.display = 'block'; return;
+  }
+  if (!validatePassword(pass)) {
+    errEl.textContent = '⚠️ Nenosiri lazima liwe na herufi na namba, urefu wa herufi 8 angalau.'; errEl.style.display = 'block'; return;
+  }
+  if (users.find(u => u.username === username)) {
+    errEl.textContent = '⚠️ Jina hilo la mtumiaji limetumika tayari.'; errEl.style.display = 'block'; return;
+  }
+
+  users.push({ username, email, pass, joinDate: new Date().toLocaleDateString('sw-TZ') });
+  localStorage.setItem('tz_users', JSON.stringify(users));
+  sucEl.textContent = '✅ Umefanikiwa kujiandikisha! Sasa unaweza kuingia.'; sucEl.style.display = 'block';
+  setTimeout(() => showScreen('login'), 1500);
+}
+
+function doLogin() {
+  const username = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+
+  const user = users.find(u => u.username === username && u.pass === pass);
+  if (!user) {
+    errEl.textContent = '⚠️ Jina au nenosiri si sahihi.'; errEl.style.display = 'block'; return;
+  }
+
+  currentUser = user; isAdmin = false;
+  enterApp();
+}
+
+function doAdminLogin() {
+  const u = document.getElementById('admin-user').value.trim();
+  const p = document.getElementById('admin-pass').value;
+  const errEl = document.getElementById('admin-error');
+  errEl.style.display = 'none';
+
+  if (u === 'Tanzania' && p === '6321') {
+    currentUser = { username: 'Tanzania', email: 'admin@tanzaniaapp.tz', joinDate: '01/01/2024' };
+    isAdmin = true;
+    enterApp();
+  } else {
+    errEl.textContent = '⚠️ Jina au nenosiri la admin si sahihi.'; errEl.style.display = 'block';
+  }
+}
+
+function enterApp() {
+  document.getElementById('header-username').textContent = currentUser.username;
+  document.getElementById('greet-name').textContent = `Habari, ${currentUser.username}! 👋`;
+  const days = ['Jumapili','Jumatatu','Jumanne','Jumatano','Alhamisi','Ijumaa','Jumamosi'];
+  const now = new Date();
+  document.getElementById('greet-date').textContent = `Leo ni ${days[now.getDay()]}, ${now.toLocaleDateString('sw-TZ')}`;
+  updateGPSCount();
+  showScreen('main-app');
+  if (isAdmin) showToast('👑 Karibu Admin Tanzania!');
+  else showToast('✅ Umeingia kikamilifu!');
+}
+
+function logout() {
+  currentUser = null; isAdmin = false;
+  showScreen('splash');
+  showToast('👋 Umefanikiwa kutoka!');
+}
+
+// ═══════════════════════════════════════
+// AI MSAIDIZI
+// ═══════════════════════════════════════
+function askAI() {
+  const input = document.getElementById('ai-input');
+  const resp = document.getElementById('ai-response');
+  const q = input.value.trim();
+  if (!q) return;
+
+  resp.style.display = 'block';
+  resp.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+  input.value = '';
+
+  setTimeout(() => {
+    const answers = aiResponses.default;
+    const answer = answers[Math.floor(Math.random() * answers.length)];
+    resp.innerHTML = `<strong>🤖 AI:</strong> ${answer}`;
+    if (ttsEnabled && 'speechSynthesis' in window) {
+      const utter = new SpeechSynthesisUtterance(answer);
+      utter.lang = 'sw';
+      window.speechSynthesis.speak(utter);
+    }
+  }, 1400);
+}
+
+// ═══════════════════════════════════════
+// GPS NYUMBA
+// ═══════════════════════════════════════
+let pendingGPSData = null;
+
+function getGPS() {
+  const statusEl = document.getElementById('gps-status');
+  statusEl.textContent = '📡 Inatafuta mahali pako...';
+  if (!navigator.geolocation) {
+    statusEl.textContent = '⚠️ Kivinjari chako hakisaidii GPS.'; return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      pendingGPSData = { lat: pos.coords.latitude.toFixed(6), lng: pos.coords.longitude.toFixed(6) };
+      statusEl.innerHTML = `✅ GPS: <span style="color:var(--accent);font-family:monospace">${pendingGPSData.lat}, ${pendingGPSData.lng}</span> — Sasa bonyeza "Hifadhi"`;
+    },
+    () => { statusEl.textContent = '⚠️ Haikuweza kupata GPS. Angalia ruhusa ya kivinjari.'; }
+  );
+}
+
+function saveGPS() {
+  const name = document.getElementById('gps-name').value.trim();
+  const price = document.getElementById('gps-price').value.trim();
+  const statusEl = document.getElementById('gps-status');
+
+  if (!name) { statusEl.textContent = '⚠️ Weka jina la nyumba kwanza!'; return; }
+  if (!pendingGPSData) { statusEl.textContent = '⚠️ Bonyeza "Pata GPS Yangu" kwanza!'; return; }
+
+  const entry = {
+    id: Date.now(), name, price: price || 'Haijabainishwa',
+    lat: pendingGPSData.lat, lng: pendingGPSData.lng,
+    owner: currentUser.username,
+    date: new Date().toLocaleDateString('sw-TZ')
+  };
+  gpsHouses.push(entry);
+  localStorage.setItem('tz_gps_houses', JSON.stringify(gpsHouses));
+  pendingGPSData = null;
+  document.getElementById('gps-name').value = '';
+  document.getElementById('gps-price').value = '';
+  statusEl.textContent = '';
+  updateGPSCount();
+  renderGPSList();
+  showToast('🏠 Nyumba imehifadhiwa!');
+}
+
+function renderGPSList() {
+  const container = document.getElementById('gps-list');
+  const myHouses = isAdmin ? gpsHouses : gpsHouses.filter(h => h.owner === currentUser?.username);
+  if (myHouses.length === 0) {
+    container.innerHTML = '<p style="color:var(--muted); font-size:0.9rem; text-align:center; padding:20px;">Bado hakuna nyumba zilizoorodheshwa.</p>';
+    return;
+  }
+  container.innerHTML = myHouses.map(h => `
+    <div class="gps-entry">
+      <div class="gps-name">🏠 ${h.name} ${isAdmin ? `<span class="badge-admin">👤 ${h.owner}</span>` : ''}</div>
+      <div class="gps-coords">📍 ${h.lat}, ${h.lng}</div>
+      <div class="gps-desc">💰 TZS ${parseInt(h.price).toLocaleString()}/mwezi &nbsp;|&nbsp; 📅 ${h.date}</div>
+    </div>
+  `).join('');
+}
+
+function updateGPSCount() {
+  const myHouses = isAdmin ? gpsHouses : gpsHouses.filter(h => h.owner === currentUser?.username);
+  document.getElementById('gps-count').textContent = myHouses.length;
+}
+
+function getLocation() {
+  const el = document.getElementById('geo-result');
+  el.textContent = '📡 Inatafuta...';
+  if (!navigator.geolocation) { el.textContent = 'GPS haipo kwenye kivinjari hiki.'; return; }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      el.innerHTML = `✅ Mahali pako: <span style="color:var(--accent)">${pos.coords.latitude.toFixed(4)}°N, ${pos.coords.longitude.toFixed(4)}°E</span><br>Hali ya Hewa: ☀️ Joto la takriban <strong>27°C</strong>, Unyevu 70%.`;
+    },
+    () => { el.textContent = '⚠️ Haikuweza kupata GPS.'; }
+  );
+}
+
+// ═══════════════════════════════════════
+// PROFILE / ADMIN
+// ═══════════════════════════════════════
+function renderProfile() {
+  const tab = document.getElementById('tab-profile');
+  if (!currentUser) return;
+
+  if (isAdmin) {
+    const userRows = users.map((u,i) => `
+      <tr>
+        <td>${i+1}</td>
+        <td><span class="status-dot"></span>${u.username}</td>
+        <td>${u.email}</td>
+        <td>${u.joinDate}</td>
+        <td>${gpsHouses.filter(h=>h.owner===u.username).length}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--muted)">Hakuna watumiaji bado</td></tr>';
+
+    tab.innerHTML = `
+      <div class="profile-card">
+        <div class="profile-avatar">👑</div>
+        <div class="profile-name">Tanzania Admin</div>
+        <div class="profile-email">admin@tanzaniaapp.tz</div>
+        <div style="margin-top:12px"><span class="chip accent">👑 Msimamizi Mkuu</span></div>
+      </div>
+      <p class="section-title">📋 Watumiaji Wote <span>(${users.length})</span></p>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:auto;margin-bottom:16px">
+        <table class="admin-table">
+          <thead><tr><th>#</th><th>Jina</th><th>Barua Pepe</th><th>Tarehe</th><th>Nyumba</th></tr></thead>
+          <tbody>${userRows}</tbody>
+        </table>
+      </div>
+      <p class="section-title">🏠 Nyumba Zote <span>(${gpsHouses.length})</span></p>
+      ${gpsHouses.length ? gpsHouses.map(h=>`
+        <div class="gps-entry">
+          <div class="gps-name">🏠 ${h.name} <span class="badge-admin">👤 ${h.owner}</span></div>
+          <div class="gps-coords">📍 ${h.lat}, ${h.lng}</div>
+          <div class="gps-desc">💰 TZS ${parseInt(h.price||0).toLocaleString()}/mwezi &nbsp;|&nbsp; 📅 ${h.date}</div>
+        </div>
+      `).join('') : '<p style="color:var(--muted);font-size:0.9rem;text-align:center;padding:16px">Hakuna nyumba bado</p>'}
+    `;
+  } else {
+    const myHouses = gpsHouses.filter(h => h.owner === currentUser.username);
+    tab.innerHTML = `
+      <div class="profile-card">
+        <div class="profile-avatar">😊</div>
+        <div class="profile-name">${currentUser.username}</div>
+        <div class="profile-email">${currentUser.email}</div>
+        <div style="margin-top:12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap">
+          <span class="chip">📅 Alijiunga: ${currentUser.joinDate}</span>
+          <span class="chip accent">🏠 ${myHouses.length} nyumba</span>
+        </div>
+      </div>
+      <p class="section-title">Nyumba Zangu <span>(${myHouses.length})</span></p>
+      ${myHouses.length ? myHouses.map(h=>`
+        <div class="gps-entry">
+          <div class="gps-name">🏠 ${h.name}</div>
+          <div class="gps-coords">📍 ${h.lat}, ${h.lng}</div>
+          <div class="gps-desc">💰 TZS ${parseInt(h.price||0).toLocaleString()}/mwezi &nbsp;|&nbsp; 📅 ${h.date}</div>
+        </div>
+      `).join('') : '<p style="color:var(--muted);font-size:0.9rem;text-align:center;padding:16px">Bado hujaorodhesha nyumba. Nenda kwenye kichupo cha Nyumba!</p>'}
+    `;
+  }
+}
+
+// ═══════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════
+function toggleTheme() {
+  darkMode = !darkMode;
+  document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+  const toggle = document.getElementById('theme-toggle');
+  if (toggle) toggle.classList.toggle('on', !darkMode);
+  showToast(darkMode ? '🌙 Usiku Umewashwa' : '☀️ Mchana Umewashwa');
+}
+
+function toggleVoice() {
+  voiceEnabled = !voiceEnabled;
+  const btn = document.getElementById('voice-btn');
+  btn.textContent = voiceEnabled ? '🔊' : '🔇';
+  showToast(voiceEnabled ? '🔊 Sauti Imewashwa' : '🔇 Sauti Imezimwa');
+}
+
+function toggleTTS() {
+  ttsEnabled = !ttsEnabled;
+  const tog = document.getElementById('tts-toggle');
+  if (tog) tog.classList.toggle('on', ttsEnabled);
+  showToast(ttsEnabled ? '🗣️ Kusoma kwa Sauti Kumewashwa' : '🔇 Kusoma kwa Sauti Kumezimwa');
+}
+
+function changeLang(val) {
+  const names = { sw: 'Kiswahili 🇹🇿', en: 'English 🇬🇧', ar: 'العربية 🇸🇦' };
+  showToast(`🌍 Lugha: ${names[val]}`);
+}
+
+function changeAccent(color) {
+  document.documentElement.style.setProperty('--accent', color);
+  showToast('🎨 Rangi imebadilishwa!');
+}
+
+// ═══════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  renderGPSList();
+  // Pressing Enter on AI input
+  document.getElementById('ai-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') askAI();
+  });
+});
+</script>
+</body>
+</html>
